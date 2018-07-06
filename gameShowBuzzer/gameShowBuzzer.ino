@@ -2,15 +2,19 @@
  * File:  gameShowBuzzer.ino
  * Name:  Minh Vu
  * Desc.: Game Show Buzzer System
- * Date:  06/28/18
+ * Date:  07/05/18
  * Notes: Current sketch is a test to sample debounced button presses.
+ *        The number of buttons pressed and corresponding button numbers
+ *        are printed to the serial port.
  */
 
-// 1 reset and 4 player buttons
+// Buttons 0-4 (1 reset and 4 player buttons)
 const byte numBtns = 5;
 const byte btnPins[numBtns] = {2, 4, 7, 8, 12};
 byte btnVals[numBtns];
 
+// List of buttons currently pressed (max size = numBtns, current size = numBtnsPressed)
+byte btnsPressed[numBtns];
 byte numBtnsPressed = 0;
 
 // Minimum delay between using button values
@@ -42,11 +46,20 @@ void readBtns()
     for(int s = 0; s < numBtns; s++)
     {
       if(btnVals[s] == HIGH)
+      {
+        btnsPressed[numBtnsPressed] = s;
         numBtnsPressed++;
-      Serial.print(btnVals[s]);
+      }
+    }
+
+    Serial.print(numBtnsPressed);
+    Serial.print('\t');
+    for(int i = 0; i < numBtnsPressed; i++)
+    {
+      Serial.print(btnsPressed[i]);
       Serial.print(' ');
     }
-    Serial.println(numBtnsPressed);
+    Serial.println();
     
     numBtnsPressed = 0;
     prevDebounce = millis();
