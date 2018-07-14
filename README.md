@@ -6,9 +6,9 @@ The idea of this project is to create a buzzer system similar to those seen on g
 
 ## To Do:
 - [X] Detect button input
-- [ ] Implement debouncing
-- [ ] Implement "lockout" functionality described above (with an additional button to reset everything)
+- [X] Implement debouncing
+- [X] Implement "lockout" functionality described above (with an additional button to reset everything)
 - [ ] Add LEDs - one for each player - to light up with the corresponding button that was pressed first (maybe add a buzzer, too)
-- [ ] Finalize all hardware components and move them from a breadboard to a perfboard (maybe use an Arduino Micro or Nano, too)
-- [ ] 3D print a housing for each button and a case for the perfboard and Arduino
+- [ ] Finalize all hardware components and move them from a breadboard to a perfboard (maybe use an Arduino Nano, too)
+- [ ] 3D print a housing for each button and a case for the perfboard and Arduino, use cables to connect each button to the case (maybe old telephone cable)
 - [ ] Assemble everything!
