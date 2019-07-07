@@ -2,7 +2,13 @@
 
 The idea of this project is to create a buzzer system similar to those seen on game shows like *Jeopardy!* or quiz bowls. These are usually called "lockout" buzzer systems, probably since the first person to buzz in causes everyone else to be "locked out" from buzzing in, too.
 
-**This project is a work-in-progress.**
+## Sketches
+There are two sketch versions:
+1. An older version for Arduino Uno
+   - This periodically samples the button input pins
+   - In the case that more than one player button is read as pressed, a player will be picked randomly
+1. A newer version for Teensy LC **(WIP)**
+    - This will use hardware interrupts to handle button inputs
 
 ## To Do:
 - [X] Detect button input

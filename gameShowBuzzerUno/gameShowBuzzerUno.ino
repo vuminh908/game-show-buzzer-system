@@ -1,9 +1,10 @@
 /*
- * File:  gameShowBuzzer.ino
+ * File:  gameShowBuzzerUno.ino
  * Name:  Minh Vu
  * Desc.: Game Show Buzzer System
- * Date:  07/14/18
- * Notes: Current sketch is a test for the lock-out functionality.
+ * Date:  07/06/19
+ * Notes: This sketch is written for Arduino Uno.
+ *        Sketch code last updated 07/14/18
  */
 
 // Buttons 0-4 (1 reset and 4 player buttons)
@@ -19,7 +20,7 @@ byte numBtnsPressed = 0;
 // LEDs (four - one for each player) and buzzer pins
 const byte ledPins[numBtns - 1] = {3, 9, 10, 11};
 const byte buzzerPin = 5;
-const short buzzerFreq = 698; // Frequency for note F5
+const short buzzerFreqs[numBtns - 1] = {349, 440, 523, 698}; // Frequency for note F5
 const unsigned long blinkTime = 750;
 unsigned long blinkTimeStamp = 0;
 byte currLEDState = LOW;
@@ -38,7 +39,7 @@ void setup()
   for(int s = 0; s < numBtns; s++)
   {
     pinMode(btnPins[s], INPUT);
-    
+
     if(s < numBtns - 1)
       pinMode(ledPins[s], OUTPUT);
   }
@@ -58,7 +59,7 @@ void loop()
     case LISTEN:
       readPlayerBtns();
       break;
-      
+
     default:
       // Blink selected player's LED
       if((millis() - blinkTimeStamp) >= blinkTime && blinkEn)
@@ -71,14 +72,15 @@ void loop()
         blinkTimeStamp = millis();
       }
 
-      if(selectedBtn >= P1 && selectedBtn <= numBtns - 1)
-        digitalWrite(ledPins[selectedBtn - 1], currLEDState);
+      digitalWrite(ledPins[selectedBtn - 1], currLEDState);
       
       readResetBtn();
       break;
   }
 
+  // Debugging
   //Serial.println(state);
+  
   delay(10);
 }
 
@@ -116,8 +118,8 @@ void readPlayerBtns()
       // Button number will match its respective state value
       state = selectedBtn;
 
-      // Sound buzzer for 1 second
-      tone(buzzerPin, buzzerFreq, 1000);
+      // Sound buzzer for 750 milliseconds, same duration as an LED blink
+      tone(buzzerPin, buzzerFreqs[selectedBtn - 1], blinkTime);
 
       // Illuminate corresponding LED
       currLEDState = HIGH;
@@ -147,8 +149,11 @@ void readResetBtn()
       // Turn off LED
       currLEDState = LOW;
       digitalWrite(ledPins[selectedBtn - 1], currLEDState);
+
+      // Turn off buzzer
+      noTone(buzzerPin);
     }
-    
+
     prevDebounce = millis();
   }
 }
