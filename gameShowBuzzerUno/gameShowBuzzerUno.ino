@@ -1,4 +1,4 @@
-/*
+/**
  * File:  gameShowBuzzerUno.ino
  * Name:  Minh Vu
  * Desc.: Game Show Buzzer System
@@ -18,21 +18,27 @@ byte btnsPressed[numBtns];
 byte numBtnsPressed = 0;
 
 // LEDs (four - one for each player) and buzzer pins
-const byte ledPins[numBtns - 1] = {3, 9, 10, 11};
+const byte numLeds = numBtns - 1;
+const byte ledPins[numLeds] = {3, 9, 10, 11};
 const byte buzzerPin = 5;
-const short buzzerFreqs[numBtns - 1] = {349, 440, 523, 698}; // Frequency for note F5
+const short buzzerFreqs[numBtns - 1] = {349, 440, 523, 698}; // Frequencies for piezo
+bool buzzerIsOn = false;
 const unsigned long blinkTime = 750;
 unsigned long blinkTimeStamp = 0;
+const unsigned long toggleTime = 3000;
+unsigned long toggleTimeStamp = 0;
 byte currLEDState = LOW;
 
 // State machine values
 byte selectedBtn;
-enum {LISTEN, P1, P2, P3, P4} state = LISTEN;
+enum {LISTEN, P1, P2, P3, P4, TOGGLE} state = LISTEN;
 
 // Minimum delay between using button values
-const byte debounceTime = 25;
+const unsigned long debounceTime = 25;
 unsigned long prevDebounce = 0; // Timestamp
-bool blinkEn = false;
+bool blinkEn = true;
+bool buzzerIsPiezo = false; // True if buzzer is piezo type (settable-tone), false if single-tone
+
 void setup()
 {
   Serial.begin(9600);
@@ -46,9 +52,9 @@ void setup()
 
   pinMode(buzzerPin, OUTPUT);
 
-  // Keep button 0 (reset) pressed during setup to enable LED blinking
+  // Keep button 0 (reset) pressed during setup to indicate piezo buzzer instead of single-tone
   if(digitalRead(btnPins[0]) == HIGH)
-    blinkEn = true;
+    buzzerIsPiezo = true;
 }
 
 void loop()
@@ -60,14 +66,19 @@ void loop()
       readPlayerBtns();
       break;
 
+    case TOGGLE:
+      readToggleBtn();
+      break;
+
     default:
       // Blink selected player's LED
+      // Also disable buzzer if it is signle-tone and is on
       if((millis() - blinkTimeStamp) >= blinkTime && blinkEn)
       {
-        if(currLEDState == HIGH)
-          currLEDState = LOW;
-        else
-          currLEDState = HIGH;
+        currLEDState = !currLEDState;
+
+        if(buzzerIsOn)
+          handleBuzzer(false);
 
         blinkTimeStamp = millis();
       }
@@ -80,12 +91,15 @@ void loop()
 
   // Debugging
   //Serial.println(state);
-  
-  delay(10);
 }
 
 void readPlayerBtns()
 {
+  // Sample reset button for toggling LED blink
+  // Save previous reset button value and sample current value
+  prevRstBtnVal = btnVals[0];
+  btnVals[0] = digitalRead(btnPins[0]);
+
   // Sample player button values (buttons 1-4)
   for(int s = 1; s < numBtns; s++)
     btnVals[s] = digitalRead(btnPins[s]);
@@ -93,6 +107,15 @@ void readPlayerBtns()
   // Use all button values periodically, which is determined by debounceTime
   if((millis() - prevDebounce) >= debounceTime)
   {
+    // Player button handling overridden if reset button is being pressed
+    if(btnVals[0] == HIGH)
+    {
+      toggleTimeStamp = millis();
+      state = TOGGLE;
+      return;
+    }
+
+    // Handle player buttons
     for(int s = 1; s < numBtns; s++)
     {
       if(btnVals[s] == HIGH)
@@ -118,13 +141,12 @@ void readPlayerBtns()
       // Button number will match its respective state value
       state = selectedBtn;
 
-      // Sound buzzer for 750 milliseconds, same duration as an LED blink
-      tone(buzzerPin, buzzerFreqs[selectedBtn - 1], blinkTime);
+      // Sound buzzer
+      handleBuzzer(true);
 
       // Illuminate corresponding LED
       currLEDState = HIGH;
-      if(blinkEn)
-        blinkTimeStamp = millis();
+      blinkTimeStamp = millis();
     }
 
     numBtnsPressed = 0;
@@ -151,10 +173,64 @@ void readResetBtn()
       digitalWrite(ledPins[selectedBtn - 1], currLEDState);
 
       // Turn off buzzer
-      noTone(buzzerPin);
+      handleBuzzer(false);
     }
 
     prevDebounce = millis();
   }
 }
 
+void readToggleBtn()
+{
+  // Sample and use button value periodically, which is determined by debounceTime
+  if((millis() - prevDebounce) >= debounceTime)
+  {
+    // Save previous reset button value and sample current value
+    prevRstBtnVal = btnVals[0];
+    btnVals[0] = digitalRead(btnPins[0]);
+
+    if(btnVals[0] == LOW)
+    {
+      state = LISTEN;
+      return;
+    }
+
+    // Toggle LED blinking if reset button is held for at least 3 seconds
+    if((millis() - toggleTimeStamp) >= toggleTime)
+    {
+      blinkEn = !blinkEn;
+
+      // User feedback - flash all LEDs (250 ms if blinking enabled, 1 s if not)
+      // No need to do this non-blocking since nothing else should happen during this
+      short flashTime = (blinkEn) ? 250 : 1000;
+      for(int l = 0; l < numLeds; l++)
+        digitalWrite(ledPins[l], HIGH);
+      delay(flashTime);
+      for(int l = 0; l < numLeds; l++)
+        digitalWrite(ledPins[l], LOW);
+
+      state = LISTEN;
+    }
+  }
+}
+
+void handleBuzzer(bool buzzerOn)
+{
+  if(buzzerOn)
+  {
+    // Sound buzzer for 750 milliseconds, same duration as an LED blink
+    if(buzzerIsPiezo)
+      tone(buzzerPin, buzzerFreqs[selectedBtn - 1], blinkTime);
+    else
+      digitalWrite(buzzerPin, HIGH);
+    buzzerIsOn = true;
+  }
+  else
+  {
+    if(buzzerIsPiezo)
+      noTone(buzzerPin);
+    else
+      digitalWrite(buzzerPin, LOW);
+    buzzerIsOn = false;
+  }
+}
