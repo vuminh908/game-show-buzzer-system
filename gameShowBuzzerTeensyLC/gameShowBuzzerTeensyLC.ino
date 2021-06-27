@@ -26,6 +26,7 @@ const unsigned long btnCooldown = 500; // in ms, cooldown after button press bef
 // LED (4 - one for each player) and buzzer pins
 const byte numLeds = numBtns - 1;
 const byte ledPins[numLeds] = {3, 4, 6, 9};
+const byte ledPWMVal = 128;
 const byte buzzerPin = 16;
 const short buzzerFreqs[numBtns - 1] = {784, 989, 1175, 1397}; // Frequencies for piezo, dominant 7th arpegio starting on G5
 
@@ -34,7 +35,7 @@ void isrRST() {
   unsigned long currTime = millis();
   if (currState != LISTEN && currTime - cooldownTimestamp >= btnCooldown)
   {
-    digitalWrite(ledPins[currState - 1], LOW);
+    analogWrite(ledPins[currState - 1], 0);
     currState = LISTEN;
     Serial.println("RST");
   }
@@ -47,7 +48,7 @@ void isrP1() {
   {
     currState = P1;
     Serial.println("P1");
-    digitalWrite(ledPins[currState - 1], HIGH);
+    analogWrite(ledPins[currState - 1], ledPWMVal);
     cooldownTimestamp = millis();
     tone(buzzerPin, buzzerFreqs[currState - 1], btnCooldown);
   }
@@ -60,7 +61,7 @@ void isrP2() {
   {
     currState = P2;
     Serial.println("P2");
-    digitalWrite(ledPins[currState - 1], HIGH);
+    analogWrite(ledPins[currState - 1], ledPWMVal);
     cooldownTimestamp = millis();
     tone(buzzerPin, buzzerFreqs[currState - 1], btnCooldown);
   }
@@ -73,7 +74,7 @@ void isrP3() {
   {
     currState = P3;
     Serial.println("P3");
-    digitalWrite(ledPins[currState - 1], HIGH);
+    analogWrite(ledPins[currState - 1], ledPWMVal);
     cooldownTimestamp = millis();
     tone(buzzerPin, buzzerFreqs[currState - 1], btnCooldown);
   }
@@ -86,7 +87,7 @@ void isrP4() {
   {
     currState = P4;
     Serial.println("P4");
-    digitalWrite(ledPins[currState - 1], HIGH);
+    analogWrite(ledPins[currState - 1], ledPWMVal);
     cooldownTimestamp = millis();
     tone(buzzerPin, buzzerFreqs[currState - 1], btnCooldown);
   }
