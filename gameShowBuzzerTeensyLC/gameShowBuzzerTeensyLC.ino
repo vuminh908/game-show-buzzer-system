@@ -21,9 +21,14 @@ const byte P3 = 3;
 const byte P4 = 4;
 volatile byte currState = LISTEN;
 
+// LED (4 - one for each player) and buzzer pins
+const byte numLeds = numBtns - 1;
+const byte ledPins[numLeds] = {3, 4, 6, 9};
+
 void isrRST() {
   if (currState != LISTEN)
   {
+    digitalWrite(ledPins[currState - 1], LOW);
     currState = LISTEN;
     Serial.println("RST");
   }
@@ -34,6 +39,7 @@ void isrP1() {
   {
     currState = P1;
     Serial.println("P1");
+    digitalWrite(ledPins[currState - 1], HIGH);
   }
 }
 
@@ -42,6 +48,7 @@ void isrP2() {
   {
     currState = P2;
     Serial.println("P2");
+    digitalWrite(ledPins[currState - 1], HIGH);
   }
 }
 
@@ -50,6 +57,7 @@ void isrP3() {
   {
     currState = P3;
     Serial.println("P3");
+    digitalWrite(ledPins[currState - 1], HIGH);
   }
 }
 
@@ -58,6 +66,7 @@ void isrP4() {
   {
     currState = P4;
     Serial.println("P4");
+    digitalWrite(ledPins[currState - 1], HIGH);
   }
 }
 
@@ -66,6 +75,10 @@ void setup() {
   for (byte i = 0; i < numBtns; i++)
   {
     pinMode(btnPins[i], INPUT);
+  }
+  for (byte j = 0; j < numLeds; j++)
+  {
+    pinMode(ledPins[j], OUTPUT);
   }
 
   attachInterrupt(btnPins[0], isrP1, RISING);
