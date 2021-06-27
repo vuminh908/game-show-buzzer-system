@@ -20,54 +20,71 @@ const byte P2 = 2;
 const byte P3 = 3;
 const byte P4 = 4;
 volatile byte currState = LISTEN;
+const unsigned long btnCooldown = 500; // in ms, cooldown after button press before being able to reset
+volatile unsigned long cooldownTimestamp = 0; // in ms
 
 // LED (4 - one for each player) and buzzer pins
 const byte numLeds = numBtns - 1;
 const byte ledPins[numLeds] = {3, 4, 6, 9};
 
 void isrRST() {
-  if (currState != LISTEN)
+  cli();
+  unsigned long currTime = millis();
+  if (currState != LISTEN && currTime - cooldownTimestamp >= btnCooldown)
   {
     digitalWrite(ledPins[currState - 1], LOW);
     currState = LISTEN;
     Serial.println("RST");
   }
+  sei();
 }
 
 void isrP1() {
+  cli();
   if (currState == LISTEN)
   {
     currState = P1;
     Serial.println("P1");
     digitalWrite(ledPins[currState - 1], HIGH);
+    cooldownTimestamp = millis();
   }
+  sei();
 }
 
 void isrP2() {
+  cli();
   if (currState == LISTEN)
   {
     currState = P2;
     Serial.println("P2");
     digitalWrite(ledPins[currState - 1], HIGH);
+    cooldownTimestamp = millis();
   }
+  sei();
 }
 
 void isrP3() {
+  cli();
   if (currState == LISTEN)
   {
     currState = P3;
     Serial.println("P3");
     digitalWrite(ledPins[currState - 1], HIGH);
+    cooldownTimestamp = millis();
   }
+  sei();
 }
 
 void isrP4() {
+  cli();
   if (currState == LISTEN)
   {
     currState = P4;
     Serial.println("P4");
     digitalWrite(ledPins[currState - 1], HIGH);
+    cooldownTimestamp = millis();
   }
+  sei();
 }
 
 void setup() {
@@ -94,7 +111,9 @@ void setup() {
 void loop() {
   // TODO
   digitalWrite(LED_BUILTIN, HIGH);
+  cli();
   Serial.println(currState);
+  sei();
   delay(500);
   digitalWrite(LED_BUILTIN, LOW);
   delay(500);
