@@ -15,7 +15,8 @@ There are two sketch versions:
 - [X] Implement debouncing
 - [X] Implement "lockout" functionality described above (with an additional button to reset everything)
 - [X] Add LEDs - one for each player - to light up with the corresponding button that was pressed first (add a buzzer, too)
-- [ ] Finalize all hardware components and move them from a breadboard to a perfboard (try a Teensy LC in place of an Arduino Uno)
-- [ ] 3D print a housing for each button and a case for the perfboard and Arduino, use cables to connect each button to the case (maybe old telephone cable)
-- [ ] Assemble everything!
+- [X] Migrate to Teensy LC from Arduino Uno
+- [ ] Finalize all hardware components and assemble everything on a perfboard, use cables to connect each button to the case (old telephone cable)
+- [ ] 3D print a housing for each button and a case for the perfboard and Arduino
 - [ ] Testing and debugging
+- [ ] Start using it for trivia/Jeopardy nights!
